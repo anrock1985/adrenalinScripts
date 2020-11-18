@@ -137,7 +137,8 @@ begin
 
   // Вводим логопас
   currentBot := checkBotNumber(charName);
-  if (currentBot.Control.GameWindow <> 0) then
+  if (currentBot.Control.LoginStatus = 0) then
+  // if (currentBot.Control.GameWindow <> 0) then
   begin
     log := logPrefix + 'Попытка залогиниться...';
     print(log);
@@ -443,27 +444,41 @@ begin
   // Ожидаем окончания периода рестарта
   if (RestartByTime) then
   begin
-    if (currentBot.Control.GameWindow <> 0) then
-      closeGame(currentBot);
+    closeTrainGameWindows();
     if (Time < RestartTime + RestartDelay) then
     begin
-      print('Сервер в процессе рестарта...');
+      log := '[' + charName + '] ' +
+        'Сервер в процессе рестарта...';
+      print(log);
       Delay(serverRestartingCheckDelay);
+      exit;
     end
     else
       RestartByTime := false;
-  end;
-
-  // Если персонаж не в игре, закрываем L2 клиент и пытаемся зайти обратно
-  if (currentBot.Control.Status <> lsOnline) then
+  end
+  else
   begin
-    log := charName + ' ### DISCONNECTED ###';
-    print(log);
-    // Закрываем L2 клиент, если открыт
-    closeGame(currentBot);
-    // Пытаемся зайти в игру до победного
-    while not(logInToGame(charName)) do
+    // Если персонаж не в игре, закрываем L2 клиент и пытаемся зайти обратно
+    if (currentBot.Control.Status <> lsOnline) and (Not(RestartByTime)) then
+    begin
+      log := charName + ' ### DISCONNECTED ###';
+      print(log);
+      // Закрываем L2 клиент, если открыт
       closeGame(currentBot);
+      // Пытаемся зайти в игру до победного
+      while not(logInToGame(charName)) do
+        closeGame(currentBot);
+    end;
+  end;
+end;
+
+procedure closeTrainGameWindows;
+var
+  i: integer;
+begin
+  for i := 0 to localTrainCharNames.Count - 1 do
+  begin
+    closeGame(TBot(BotList[getBotNumFromShMem(localTrainCharNames[i])]));
   end;
 end;
 
