@@ -1,5 +1,5 @@
-// Last edited: 17.11.2020 01:50
-// Version: 1.0.1
+// Last edited: 18.11.2020
+// Version: 1.1.1
 
 uses SysUtils, Classes;
 
